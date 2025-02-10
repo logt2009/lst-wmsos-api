@@ -1,0 +1,237 @@
+openapi: 3.0.3
+info:
+  title: API de Gestión de Stock
+  version: 1.0.0
+  description: API para gestionar el stock en posiciones específicas, con soporte para creación, actualización, consulta y obtención de rutas jerárquicas.
+  termsOfService: https://example.com/terms
+  contact:
+    name: Equipo de Desarrollo
+    url: https://example.com/contact
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://api.stockmanagement/v1
+
+components:
+  securitySchemes:
+    oauth2_scheme:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            stock:read: Permite leer información sobre stock.
+            stock:write: Permite crear o modificar stock.
+
+  schemas:
+    PositionHierarchy:
+      type: object
+      required:
+        - zoneId
+        - positionId
+      properties:
+        zoneId:
+          type: string
+          description: Identificador de la zona.
+        positionId:
+          type: string
+          description: Identificador de la posición dentro de la zona.
+
+    StockCreate:
+      type: object
+      required:
+        - sku
+        - quantity
+        - state
+        - positionId
+      properties:
+        sku:
+          type: string
+          description: Identificador único del producto.
+        quantity:
+          type: integer
+          description: Cantidad inicial del stock.
+        state:
+          type: string
+          description: Estado inicial del stock.
+        positionId:
+          type: string
+          description: Identificador de la posición donde se almacena el stock.
+        zoneId:
+          type: string
+          nullable: true
+          description: Identificador de la zona (opcional).
+        parentPositionHierarchy:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/PositionHierarchy'
+          description: Lista de pares zona-posición que representan la jerarquía hacia la posición actual.
+
+    StockUpdate:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          nullable: true
+          description: Nueva cantidad del stock (opcional).
+        state:
+          type: string
+          nullable: true
+          description: Nuevo estado del stock (opcional).
+        zoneId:
+          type: string
+          nullable: true
+          description: Nueva zona asociada (opcional).
+        parentPositionHierarchy:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/PositionHierarchy'
+          description: Lista de pares zona-posición que representan la jerarquía hacia la posición actual.
+
+    Stock:
+      type: object
+      required:
+        - sku
+        - quantity
+        - state
+        - positionId
+      properties:
+        sku:
+          type: string
+          description: Identificador único del producto.
+        quantity:
+          type: integer
+          description: Cantidad disponible.
+        state:
+          type: string
+          description: Estado actual del stock.
+        positionId:
+          type: string
+          description: Identificador de la posición donde está el stock.
+        zoneId:
+          type: string
+          nullable: true
+          description: Identificador de la zona asociada.
+        parentPositionHierarchy:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/PositionHierarchy'
+          description: Lista de pares zona-posición que representan la jerarquía hacia la posición actual.
+
+security:
+  - oauth2_scheme:
+      - stock:read
+
+paths:
+  /stock/positions/{positionId}:
+    post:
+      summary: Registrar nuevo stock en una posición.
+      operationId: registerStockInPosition
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockCreate'
+      responses:
+        '201':
+          description: Stock registrado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stock'
+
+    put:
+      summary: Reemplazar completamente el stock en una posición.
+      operationId: replaceStockInPosition
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockCreate'
+      responses:
+        '200':
+          description: Stock reemplazado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stock'
+
+    patch:
+      summary: Actualizar parcialmente el stock en una posición.
+      operationId: updateStockInPosition
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockUpdate'
+      responses:
+        '200':
+          description: Stock actualizado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stock'
+
+    get:
+      summary: Obtener stock para una posición (opcionalmente filtrado por zona).
+      operationId: getStockByPosition
+      security:
+        - oauth2_scheme:
+            - stock:read
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: zoneId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtrar resultados por zona (opcional).
+      responses:
+        '200':
+          description: Stock encontrado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stock'

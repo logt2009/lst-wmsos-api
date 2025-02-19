@@ -1,16 +1,16 @@
 openapi: 3.0.3
 info:
-  title: API de Gestión de Stock
+  title: Stock Management API
   version: 1.0.0
-  description: API para gestionar el stock en posiciones específicas, con soporte para creación, actualización, consulta y obtención de rutas jerárquicas.
+  description: API to manage stock in specific positions, with support for creation, updating, 
+               consultation and allowing hierarchical and zone organization of stock.
   termsOfService: https://example.com/terms
   contact:
-    name: Equipo de Desarrollo
-    url: https://example.com/contact
-    email: support@example.com
+    name: LogT
+    email: 2019onlogistica@gmail.com
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: Apache License 2.0
+    url: http://www.apache.org/licenses/
 servers:
   - url: https://api.stockmanagement/v1
 
@@ -27,102 +27,130 @@ components:
             stock:write: Permite crear o modificar stock.
 
   schemas:
-    PositionHierarchy:
+    Position:
       type: object
       required:
-        - zoneId
         - positionId
       properties:
         zoneId:
           type: string
-          description: Identificador de la zona.
+          description: Zone Id.
+          default: "STOCK"
+        zoneType:
+          type: string
+          description: Zone type.
+          default: "STOCK"
         positionId:
           type: string
-          description: Identificador de la posición dentro de la zona.
+          description: Position Id.
+        positionType:
+          type: string
+          description: Position type.
+          default: "BARCODE10"
 
-    StockCreate:
+    AmountState:
       type: object
       required:
-        - sku
-        - quantity
-        - state
-        - positionId
+        - amount
       properties:
-        sku:
-          type: string
-          description: Identificador único del producto.
-        quantity:
+        amount:
           type: integer
-          description: Cantidad inicial del stock.
+          description: Amount of units.
         state:
           type: string
-          description: Estado inicial del stock.
-        positionId:
-          type: string
-          description: Identificador de la posición donde se almacena el stock.
-        zoneId:
-          type: string
-          nullable: true
-          description: Identificador de la zona (opcional).
-        parentPositionHierarchy:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/PositionHierarchy'
-          description: Lista de pares zona-posición que representan la jerarquía hacia la posición actual.
+          description: State of stock.
+          default: "AVAILABLE"
 
-    StockUpdate:
-      type: object
-      properties:
-        quantity:
-          type: integer
-          nullable: true
-          description: Nueva cantidad del stock (opcional).
-        state:
-          type: string
-          nullable: true
-          description: Nuevo estado del stock (opcional).
-        zoneId:
-          type: string
-          nullable: true
-          description: Nueva zona asociada (opcional).
-        parentPositionHierarchy:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/PositionHierarchy'
-          description: Lista de pares zona-posición que representan la jerarquía hacia la posición actual.
-
-    Stock:
+    StockInfo:
       type: object
       required:
         - sku
-        - quantity
-        - state
-        - positionId
+        - amountState
       properties:
         sku:
           type: string
-          description: Identificador único del producto.
-        quantity:
-          type: integer
-          description: Cantidad disponible.
-        state:
+          description: SKU.
+        amountState:
+          type: array
+          description: Amount sku in each state.
+          items:
+            $ref: "#/components/schemas/AmountState"
+
+    StockPosition:
+      type: object
+      required:
+        - datetime
+        - position
+        - stockContent
+      properties:
+        datetime:
           type: string
-          description: Estado actual del stock.
-        positionId:
-          type: string
-          description: Identificador de la posición donde está el stock.
-        zoneId:
-          type: string
-          nullable: true
-          description: Identificador de la zona asociada.
+          format: date-time-nanoseconds
+          description: Date and time of the last update.
+          pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}Z$'
+          example: "2023-10-15T14:30:00.123456789Z"
+        position:
+          type: object
+          description: Position of stock.
+          $ref: "#/components/schemas/Position"
+        stockContent:
+          type: array
+          description: Amounts of stock.
+          items:
+            $ref: "#/components/schemas/StockInfo"
         parentPositionHierarchy:
           type: array
           nullable: true
           items:
-            $ref: '#/components/schemas/PositionHierarchy'
+            $ref: "#/components/schemas/Position"
           description: Lista de pares zona-posición que representan la jerarquía hacia la posición actual.
+
+    StockVariation:
+      type: object
+      required:
+        - datetime
+        - position
+        - stockChanges
+      properties:
+        datetime:
+          type: string
+          format: date-time-nanoseconds
+          description: Date and time of the last update.
+          pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}Z$'
+          example: "2023-10-15T14:30:00.123456789Z" 
+        position:
+          type: object
+          description: Position of stock.
+          $ref: "#/components/schemas/Position"
+        stockChanges:
+          type: array
+          description: Variation of stock (positive or negatives)
+          items:
+            $ref: "#components/schemas/StockInfo"
+    
+
+    StockPositionUpdate:
+      type: object
+      required: 
+        - stockPosition
+        - stockVariation
+      properties:
+        stockPosition:
+          type: object
+          description: Stock in a position.
+          $ref: "#/components/schemas/StockPosition"
+        stockVariation:
+          type: object
+          description: Variation respect stock previous.
+          $ref: "#/components/schemas/StockVariation"
+
+    ErrorData:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
 
 security:
   - oauth2_scheme:
@@ -131,7 +159,7 @@ security:
 paths:
   /stock/positions/{positionId}:
     post:
-      summary: Registrar nuevo stock en una posición.
+      summary: Add new position in stock.
       operationId: registerStockInPosition
       security:
         - oauth2_scheme:
@@ -147,17 +175,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StockCreate'
+              $ref: "#/components/schemas/StockPosition"
       responses:
-        '201':
-          description: Stock registrado exitosamente.
+        "201":
+          description: Stock added.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Stock'
+                $ref: "#/components/schemas/StockPositionUpdate"
+        "409":
+          description: Position already exists.
+          content: {}
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
 
     put:
-      summary: Reemplazar completamente el stock en una posición.
+      summary: Add or update position in stock.
       operationId: replaceStockInPosition
       security:
         - oauth2_scheme:
@@ -173,17 +210,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StockCreate'
+              $ref: "#/components/schemas/StockPosition"
       responses:
-        '200':
-          description: Stock reemplazado exitosamente.
+        "200":
+          description: Stock added or updated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Stock'
+                $ref: "#/components/schemas/StockPositionUpdate"
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
 
     patch:
-      summary: Actualizar parcialmente el stock en una posición.
+      summary: Partially update stock 
       operationId: updateStockInPosition
       security:
         - oauth2_scheme:
@@ -194,22 +237,41 @@ paths:
           required: true
           schema:
             type: string
+        - name: operation
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [add, update, remove]
+            description: >
+              Type of partially update.
+              - add: increase the amount indicate in the request for all content. (sku and state)
+              - update: Update the value of stock for some amounts of sku-states.
+              - remove:  increase the amount indicate in the request for all content. (sku and state)
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StockUpdate'
+              $ref: "#/components/schemas/StockPosition"
       responses:
-        '200':
+        "200":
           description: Stock actualizado exitosamente.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Stock'
-
+                $ref: "#/components/schemas/StockPositionUpdate"
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+        
     get:
-      summary: Obtener stock para una posición (opcionalmente filtrado por zona).
+      summary: Get stock for a position. If the same id of position can exists in two or more zones you
+               should filter using zone. If you don't filter all positions will be included in the response.
       operationId: getStockByPosition
       security:
         - oauth2_scheme:
@@ -227,11 +289,11 @@ paths:
             type: string
           description: Filtrar resultados por zona (opcional).
       responses:
-        '200':
+        "200":
           description: Stock encontrado.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Stock'
+                  $ref: "#/components/schemas/StockPosition"

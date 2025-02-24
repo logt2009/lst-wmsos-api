@@ -115,7 +115,7 @@ components:
         datetime:
           type: string
           format: date-time-nanoseconds
-          description: Date and time of the last update.
+          description: Date and time the stock before generate de variation.
           pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}Z$'
           example: "2023-10-15T14:30:00.123456789Z" 
         position:

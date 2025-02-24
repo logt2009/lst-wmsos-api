@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Stock Management API
+  title: Logical Stock Management API
   version: 1.0.0
   description: API to manage stock in specific positions, with support for creation, updating, 
                consultation and allowing hierarchical and zone organization of stock.

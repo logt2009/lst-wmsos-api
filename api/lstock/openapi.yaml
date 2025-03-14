@@ -157,7 +157,44 @@ security:
       - stock:read
 
 paths:
-  /stock/positions/{positionId}:
+  /stock/position:
+    get:
+      summary: Get all positions
+      operationId: findPositions
+      security:
+        - oauth2_scheme:
+          - stock:read
+      parameters:
+        - name: zoneId
+          in: query
+          schema:
+            type: string
+        - name: positionId
+          in: query
+          schema:
+            type: string
+
+      responses:
+        "200":
+          description: Stock encontrado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockPosition"
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+
+      x-one-of-parameters:
+       - zoneId
+       - positionId
+
+  /stock/position/{positionId}:
     post:
       summary: Add new position in stock.
       operationId: registerStockInPosition
@@ -297,3 +334,11 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/StockPosition"
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+        "404":
+          description: No data.

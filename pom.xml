@@ -14,7 +14,44 @@
 
     <!-- Dependencias (opcional) -->
     <dependencies>
-        <!-- Si necesitas alguna dependencia adicional, agrégala aquí -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>3.1.0</version> <!-- Ajusta la versión según tus necesidades -->
+        </dependency>
+
+        <!-- Otras dependencias necesarias -->
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+            <version>0.2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.1.10</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-models</artifactId>
+            <version>2.1.10</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
     </dependencies>
 
     <!-- Configuración de recursos -->
@@ -27,6 +64,82 @@
                 </includes>
             </resource>
         </resources>
+
+        <plugins>
+      
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version> <!-- Usa la versión más reciente del plugin -->
+                <configuration>
+                    <source>17</source> <!-- Versión de Java para el código fuente -->
+                    <target>17</target> <!-- Versión de Java para el bytecode generado -->
+                    <release>17</release> <!-- Opcional: Especifica la versión de Java -->
+                </configuration>
+            </plugin>
+
+            <!-- Plugin para generar clases a partir de OpenAPI -->
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>6.2.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Directorio donde se generará el código -->
+                            <outputDir>${project.build.directory}/generated-sources/openapi</outputDir>
+
+                            <!-- Generador para Spring Boot -->
+                            <generatorName>spring</generatorName>
+
+                            <!-- Especificación OpenAPI (archivo YAML) -->
+                            <inputSpec>${project.basedir}/api/lstock/openapi.yaml</inputSpec>
+
+                            <!-- Opciones de configuración -->
+                            <configOptions>
+                                <sourceFolder>src/gen/java/main</sourceFolder>
+                                <modelPackage>org.eon.wmsos.model</modelPackage>
+                                <apiPackage>org.eon.wmsos.api</apiPackage>
+                                <invokerPackage>org.eon.wmsos.invoker</invokerPackage>
+                                <library>spring-boot</library>
+                                <useTags>true</useTags> <!-- Usa tags para agrupar endpoints -->
+                                <delegatePattern>true</delegatePattern> <!-- Habilita patrón delegado -->
+                                <generateApis>true</generateApis> <!-- Genera controladores -->
+                                <generateModels>true</generateModels> <!-- Genera modelos -->
+                                <generateSupportingFiles>false</generateSupportingFiles> <!-- No genera archivos de soporte -->
+                                <generateApiDocumentation>true</generateApiDocumentation> <!-- Genera Javadoc para APIs -->
+                                <generateModelDocumentation>true</generateModelDocumentation> <!-- Genera Javadoc para modelos -->
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Plugin para incluir las fuentes generadas en el compilador -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/openapi/src/gen/java/main</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+
     </build>
 
 </project>

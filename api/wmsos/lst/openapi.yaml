@@ -1,0 +1,270 @@
+openapi: 3.0.3
+info:
+  title: Logical Stock Management API
+  version: 1.0.0
+  description: API to manage stock in specific positions, with support for creation, updating, 
+               consultation and allowing hierarchical and zone organization of stock.
+  termsOfService: https://example.com/terms
+  contact:
+    name: LogT - Logitics Tech
+    email: 2019onlogistica@gmail.com
+  license:
+    name: Apache License 2.0
+    url: http://www.apache.org/licenses/
+servers:
+  - url: https://api.stockmanagement/v1
+
+components:
+  securitySchemes:
+    oauth2_scheme:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            stock:read: Permission for reading.
+            stock:write: Permission for writing. Update, delete and create stock.
+
+  schemas:
+    LocationKey:
+      type: object
+      required:
+        - id
+        - leafId
+        - parentId
+      properties:
+        id:
+          type: string
+          description: ID of the location.
+        leafId:
+          type: string
+          description: ID of the leaf location.
+        parentId:
+          type: string
+          description: ID of the parent location.
+    Location:
+      type: object
+      required:
+        - node
+        - subtype
+        - state
+      properties:
+        node:
+          $ref: "#/components/schemas/LocationKey"
+          description: Key of the location into a map of stock
+        subtype:
+          type: string
+          description: Subtype of the location.
+        state:
+          type: string
+          description: State of the location.
+    AmountState:
+      type: object
+      required:
+        - amount
+      properties:
+        amount:
+          type: integer
+          description: Amount of units.
+        state:
+          type: string
+          description: State of stock.
+          default: "AVAILABLE"
+
+    StockInfo:
+      type: object
+      required:
+        - sku
+        - amountState
+      properties:
+        sku:
+          type: string
+          description: SKU.
+        amountState:
+          type: array
+          description: Amount sku in each state.
+          items:
+            $ref: "#/components/schemas/AmountState"
+
+    StockPosition:
+      type: object
+      required:
+        - datetime
+        - positionId
+        - leafId
+        - stockContent
+      properties:
+        datetime:
+          type: string
+          format: date-time-nanoseconds
+          description: Date and time of the last update.
+          pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}Z$'
+          example: "2023-10-15T14:30:00.123456789Z"
+        positionId:
+          type: string
+          description: ID of the position that contains Stock Position
+          example: "R.Z01.P001"
+        leafId:
+          type: string
+          description: ID of the leaf that contains Stock Position
+          example: "P001"
+        stockContent:
+          type: array
+          description: Amounts of stock.
+          items:
+            $ref: "#/components/schemas/StockInfo"
+
+    StockPositionWithPosition:
+      type: object
+      required:
+        - parentPosition
+        - stockPosition
+      properties:
+        parentPosition:
+          $ref: "#/components/schemas/Location"
+          description: Parent position of the stock position.
+        stockPosition:
+          $ref: "#/components/schemas/StockPosition"
+          description: Stock position.
+
+    StockPositionDelta:
+      type: object
+      required:
+        - datetime
+        - positionId
+        - stockChanges
+      properties:
+        datetime:
+          type: string
+          format: date-time-nanoseconds
+          description: Date and time the stock generate the variation.
+          pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}Z$'
+          example: "2023-10-15T14:30:00.123456789Z" 
+        positionId:
+          type: string
+          description: ID of the position that contains Stock Position
+          example: "R.Z01.P001"
+        stockContent:
+          type: array
+          description: Delta amounts of stock.
+          items:
+            $ref: "#/components/schemas/StockInfo"
+
+    StockStepPath:
+      type: object
+      description: One position of path into the stock.
+      properties:
+        location:
+          $ref: "#/components/schemas/Location"
+          description: Path of the position that contains Stock Position
+        next:
+          type: array
+          description: Next positions of the path.
+          items:
+            $ref: "#/components/schemas/StockStepPath"
+        leaf:
+          $ref: "#/components/schemas/StockPositionWithPosition"
+          description: Stock position with parent position.
+
+    ErrorData:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+
+security:
+  - oauth2_scheme:
+      - stock:read
+
+paths:
+  /stock/position/{positionId}:
+    get:
+      summary: Get stock postion by id.
+      operationId: findStockPosition
+      security:
+        - oauth2_scheme:
+          - stock:read
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the position that contains Stock Position
+      responses:
+        "200":
+          description: Find stock position by positionId.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockPositionWithPosition"
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+                example:
+                  message: "Invalid data provided."
+    put:
+      summary: Add or update position in stock.
+      operationId: deltaUpdateInStockPosition
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StockPositionDelta"
+      responses:
+        "200":
+          description: Stock added or updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockPositionWithPosition"
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+
+  /stock/positions/{path}:
+    get:
+      summary: Get stock positions under the path.
+      operationId: findStockPositionsByPath
+      security:
+        - oauth2_scheme:
+            - stock:read
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Path of the position that contains Stock Position
+      responses:
+        "200":
+          description: Find stock position by path.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockStepPath"
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"

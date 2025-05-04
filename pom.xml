@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Información básica del proyecto -->
@@ -12,19 +12,54 @@
     <name>OpenAPI Definition</name>
     <description>Proyecto que contiene la definición OpenAPI</description>
 
+    <properties>
+        <micronaut.openapi.generate.server>true</micronaut.openapi.generate.server>
+        <micronaut.version>4.8.2</micronaut.version> <!-- Define la versión de Micronaut -->
+    </properties>
+
     <!-- Dependencias (opcional) -->
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <version>3.1.0</version> <!-- Ajusta la versión según tus necesidades -->
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-http-server-netty</artifactId>
+            <version>${micronaut.version}</version>
         </dependency>
-
-        <!-- Otras dependencias necesarias -->
         <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-inject</artifactId>
+            <version>${micronaut.version}</version>
+        </dependency>        
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.0.2</version> 
+          </dependency>          
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>2.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.17.0</version> 
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>3.6.4</version> <!-- O una versión compatible con tu stack -->
+        </dependency>
+                          
+        <!-- Otras dependencias necesarias -->
+        <!--dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
             <version>0.2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>openapi-generator-cli</artifactId>
+            <version>6.6.0</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -55,8 +90,9 @@
         <dependency>
             <groupId>io.micronaut.openapi</groupId>
             <artifactId>micronaut-openapi</artifactId>
-            <version>4.3.0</version>
-        </dependency>
+            <version>${micronaut.version}</version>
+        </dependency-->
+
     </dependencies>
 
 
@@ -65,6 +101,7 @@
         <resources>
             <resource>
                 <directory>api</directory>
+                <targetPath>api</targetPath>
                 <includes>
                     <include>**/*.yaml</include>
                 </includes>
@@ -72,7 +109,7 @@
         </resources>
 
         <plugins>
-      
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -125,7 +162,7 @@
             </plugin-->
 
             <!-- Plugin para incluir las fuentes generadas en el compilador -->
-            <!--plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>3.2.0</version>
@@ -137,13 +174,36 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>${project.build.directory}/generated-sources/openapi/src/gen/java/main</source>
+                                <source>${project.build.directory}/generated-sources/openapi/src/main/java</source>
                             </sources>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin-->
+            </plugin>
 
+            <plugin>
+                <groupId>io.micronaut.maven</groupId>
+                <artifactId>micronaut-maven-plugin</artifactId>
+                <version>${micronaut.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-openapi-server</goal>
+                        </goals>
+                        <configuration>
+                            <definitionFile>api/wmsos/lst/openapi.yaml</definitionFile>
+                            <outputDir>${project.build.directory}/generated-sources/openapi</outputDir>
+                            <generatorName>micronaut</generatorName>
+                            <apiPackageName>org.eon.wmsos.generated.api</apiPackageName>
+                            <modelPackageName>org.eon.wmsos.generated.model</modelPackageName>
+                            <invokerPackageName>org.eon.wmsos.generated.invoker</invokerPackageName>
+                            <serializationFramework>jackson</serializationFramework>
+                            <verbose>true</verbose>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
     </build>

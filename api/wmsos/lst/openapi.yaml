@@ -27,7 +27,7 @@ components:
             stock:write: Permission for writing. Update, delete and create stock.
 
   schemas:
-    LocationKey:
+    LsmLocationKey:
       type: object
       required:
         - id
@@ -37,13 +37,17 @@ components:
         id:
           type: string
           description: ID of the location.
+          example: "R.Z01.P001"
         leafId:
           type: string
           description: ID of the leaf location.
+          example: "P001"
         parentId:
           type: string
           description: ID of the parent location.
-    Location:
+          example: "R.Z01"
+          
+    LsmLocation:
       type: object
       required:
         - node
@@ -51,7 +55,7 @@ components:
         - state
       properties:
         node:
-          $ref: "#/components/schemas/LocationKey"
+          $ref: "#/components/schemas/LsmLocationKey"
           description: Key of the location into a map of stock
         subtype:
           type: string
@@ -59,10 +63,11 @@ components:
         state:
           type: string
           description: State of the location.
-    AmountState:
+    LsmAmountState:
       type: object
       required:
         - amount
+        - state
       properties:
         amount:
           type: integer
@@ -72,7 +77,7 @@ components:
           description: State of stock.
           default: "AVAILABLE"
 
-    StockInfo:
+    LsmStockInfo:
       type: object
       required:
         - sku
@@ -85,14 +90,12 @@ components:
           type: array
           description: Amount sku in each state.
           items:
-            $ref: "#/components/schemas/AmountState"
+            $ref: "#/components/schemas/LsmAmountState"
 
-    StockPosition:
+    LsmStockPosition:
       type: object
       required:
         - datetime
-        - positionId
-        - leafId
         - stockContent
       properties:
         datetime:
@@ -101,34 +104,26 @@ components:
           description: Date and time of the last update.
           pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}Z$'
           example: "2023-10-15T14:30:00.123456789Z"
-        positionId:
-          type: string
-          description: ID of the position that contains Stock Position
-          example: "R.Z01.P001"
-        leafId:
-          type: string
-          description: ID of the leaf that contains Stock Position
-          example: "P001"
         stockContent:
           type: array
           description: Amounts of stock.
           items:
-            $ref: "#/components/schemas/StockInfo"
+            $ref: "#/components/schemas/LsmStockInfo"
 
-    StockPositionWithPosition:
+    LsmStockPositionWithPosition:
       type: object
       required:
         - parentPosition
         - stockPosition
       properties:
         parentPosition:
-          $ref: "#/components/schemas/Location"
+          $ref: "#/components/schemas/LsmLocation"
           description: Parent position of the stock position.
         stockPosition:
-          $ref: "#/components/schemas/StockPosition"
+          $ref: "#/components/schemas/LsmStockPosition"
           description: Stock position.
 
-    StockPositionDelta:
+    LsmStockPositionDelta:
       type: object
       required:
         - datetime
@@ -149,22 +144,22 @@ components:
           type: array
           description: Delta amounts of stock.
           items:
-            $ref: "#/components/schemas/StockInfo"
+            $ref: "#/components/schemas/LsmStockInfo"
 
-    StockStepPath:
+    LsmStockStepPath:
       type: object
       description: One position of path into the stock.
       properties:
         location:
-          $ref: "#/components/schemas/Location"
+          $ref: "#/components/schemas/LsmLocation"
           description: Path of the position that contains Stock Position
         next:
           type: array
           description: Next positions of the path.
           items:
-            $ref: "#/components/schemas/StockStepPath"
+            $ref: "#/components/schemas/LsmStockStepPath"
         leaf:
-          $ref: "#/components/schemas/StockPositionWithPosition"
+          $ref: "#/components/schemas/LsmStockPositionWithPosition"
           description: Stock position with parent position.
 
     ErrorData:
@@ -200,7 +195,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StockPositionWithPosition"
+                $ref: "#/components/schemas/LsmStockPositionWithPosition"
         "400":
           description: Data wrong.
           content:
@@ -226,14 +221,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StockPositionDelta"
+              $ref: "#/components/schemas/LsmStockPositionDelta"
       responses:
         "200":
           description: Stock added or updated.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StockPositionWithPosition"
+                $ref: "#/components/schemas/LsmStockPositionWithPosition"
         "400":
           description: Data wrong.
           content:
@@ -261,7 +256,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StockStepPath"
+                $ref: "#/components/schemas/LsmStockStepPath"
         "400":
           description: Data wrong.
           content:

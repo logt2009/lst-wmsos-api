@@ -128,7 +128,7 @@ components:
       required:
         - datetime
         - positionId
-        - stockChanges
+        - stockDelta
       properties:
         datetime:
           type: string
@@ -140,11 +140,47 @@ components:
           type: string
           description: ID of the position that contains Stock Position
           example: "R.Z01.P001"
-        stockContent:
+        stockDelta:
           type: array
           description: Delta amounts of stock.
           items:
             $ref: "#/components/schemas/LsmStockInfo"
+
+    LsmStockPositionSetValue:
+      type: object
+      required:
+        - datetime
+        - positionId
+        - stockSet
+        - typeSet
+      properties:
+        datetime:
+          type: string
+          format: date-time-nanoseconds
+          description: Date and time the stock generate the variation.
+          pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}Z$'
+          example: "2023-10-15T14:30:00.123456789Z" 
+        positionId:
+          type: string
+          description: ID of the position that contains Stock Position
+          example: "R.Z01.P001"
+        stockSet:
+          type: array
+          description: Delta amounts of stock.
+          items:
+            $ref: "#/components/schemas/LsmStockInfo"
+        typeSet:
+          type: string
+          description: |
+            Type of the set.
+            - COMPLETE: Set all stock position.
+            - SKU: Set stock position by SKU included in the request.
+            - STATE: Set stock position by state included in the request.
+          default: "COMPLETE"
+          enum:
+            - "COMPLETE"
+            - "SKU"
+            - "STATE"
 
     LsmStockStepPath:
       type: object
@@ -205,7 +241,7 @@ paths:
                 example:
                   message: "Invalid data provided."
     put:
-      summary: Add or update position in stock.
+      summary: Add or update position in stock using delta value.
       operationId: deltaUpdateInStockPosition
       security:
         - oauth2_scheme:
@@ -236,27 +272,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorData"
 
-  /stock/positions/{path}:
-    get:
-      summary: Get stock positions under the path.
-      operationId: findStockPositionsByPath
+    post:
+      summary: Update position in stock using final value.
+      operationId: setStockPosition
       security:
         - oauth2_scheme:
-            - stock:read
+            - stock:write
       parameters:
-        - name: path
+        - name: positionId
           in: path
           required: true
           schema:
             type: string
-            description: Path of the position that contains Stock Position
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LsmStockPositionSetValue"
       responses:
         "200":
-          description: Find stock position by path.
+          description: Stock added or updated.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LsmStockStepPath"
+                $ref: "#/components/schemas/LsmStockPositionWithPosition"
         "400":
           description: Data wrong.
           content:

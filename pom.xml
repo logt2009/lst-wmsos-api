@@ -187,6 +187,7 @@
                 <version>${micronaut.version}</version>
                 <executions>
                     <execution>
+                        <id>generate-openapi</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate-openapi-server</goal>
@@ -198,6 +199,23 @@
                             <apiPackageName>org.eon.wmsos.generated.api</apiPackageName>
                             <modelPackageName>org.eon.wmsos.generated.model</modelPackageName>
                             <invokerPackageName>org.eon.wmsos.generated.invoker</invokerPackageName>
+                            <serializationFramework>jackson</serializationFramework>
+                            <verbose>true</verbose>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-openapi-config</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-openapi-server</goal>
+                        </goals>
+                        <configuration>
+                            <definitionFile>api/wmsos/lst/openapi-config.yaml</definitionFile>
+                            <outputDir>${project.build.directory}/generated-sources/openapi/config</outputDir>
+                            <generatorName>micronaut</generatorName>
+                            <apiPackageName>org.eon.wmsos.generated.api.config</apiPackageName>
+                            <modelPackageName>org.eon.wmsos.generated.model.config</modelPackageName>
+                            <invokerPackageName>org.eon.wmsos.generated.invoker.config</invokerPackageName>
                             <serializationFramework>jackson</serializationFramework>
                             <verbose>true</verbose>
                         </configuration>

@@ -1,0 +1,221 @@
+openapi: 3.0.3
+info:
+  title: Logical Stock Config API
+  version: 1.0.0
+  description: | 
+    API to config stock service: 
+     - Subtypes (Zones, Locations,...).
+     - States (Available, Blocked,...).
+  termsOfService: https://example.com/terms
+  contact:
+    name: LogT - Logitics Tech
+    email: 2019onlogistica@gmail.com
+  license:
+    name: Apache License 2.0
+    url: http://www.apache.org/licenses/
+servers:
+  - url: https://api.stockconfig/v1
+
+components:
+  securitySchemes:
+    oauth2_scheme:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            stockConfig:read: Permission for reading.
+            stockConfig:write: Permission for writing. Update, delete and create configs.
+
+  schemas:
+    LsmLocationSubtype:
+      type: object
+      required:
+        - type
+        - code
+        - lengthNumber
+      properties:
+        type:
+          type: string
+          description: Type of the location.
+          example: "ZONE"
+          enum:
+            - ZONE
+            - LOCATION
+        code:
+          type: string
+          description: Code of the locationType. Set of letter A-Z
+          example: "Z"
+        lengthNumber:
+          type: integer
+          description: Number of digits for a location of this type.
+          example: 3
+
+    LsmPositionSubtype:
+      type: object
+      required:
+        - subtype
+        - uniqueLeafId
+        - isFixed
+      properties:
+        subtype:
+          $ref: "#/components/schemas/LsmLocationSubtype"
+          description: Subtype data
+        uniqueLeafId:
+          type: boolean
+          description: If true, the leafId is unique in the whole map.
+          default: false
+        isFixed:
+          type: boolean
+          description: Indicates if the position is fixed.
+          default: false
+
+    ErrorData:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+
+security:
+  - oauth2_scheme:
+      - stock:read
+
+paths:
+  /stock/config/locationSubtype/{code}:
+    put:
+      summary: Add or update location subtype.
+      operationId: CreateOrUpdateLocationSubtype
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Code of the location subtype
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LsmLocationSubtype"
+      responses:
+        "200":
+          description: LocationSubtype added or updated.
+          content: {}
+            
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+    delete:
+      summary: Remove location subtype.
+      operationId: RemoveLocationSubtype
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Code of the location subtype
+      responses:
+        "200":
+          description: LocationSubtype added or updated.
+          content: {}
+            
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+  /stock/config/positionSubtype/{code}:
+    put:
+      summary: Add or update Position subtype.
+      operationId: CreateOrUpdatePositionSubtype
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Code of the location subtype
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LsmPositionSubtype"
+      responses:
+        "200":
+          description: PositionSubtype added or updated.
+          content: {}
+            
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+  /stock/config/stockState/{state}:
+    post:
+      summary: Add stock state.
+      operationId: createStockState
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: state
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Name of the stock state
+      responses:
+        "200":
+          description: Stock state added
+          content: {}
+            
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+    delete:
+      summary: Remove stock state.
+      operationId: removeStockState
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: state
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Name of the stock state
+      responses:
+        "200":
+          description: Stock state removed.
+          content: {}
+            
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"    

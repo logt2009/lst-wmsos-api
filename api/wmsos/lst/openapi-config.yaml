@@ -66,10 +66,27 @@ components:
           type: boolean
           description: If true, the leafId is unique in the whole map.
           default: false
+          example: true
         isFixed:
           type: boolean
           description: Indicates if the position is fixed.
           default: false
+          example: true
+
+    ListLsmLocationSubtype:
+      type: array
+      items:
+        oneOf:
+          - $ref: "#/components/schemas/LsmLocationSubtype"
+          - $ref: "#/components/schemas/LsmPositionSubtype"
+      description: List of location subtypes.
+
+    ListLsmStockState:
+      type: array
+      items:
+        type: string
+      description: List of stock states.
+
 
     ErrorData:
       type: object
@@ -84,6 +101,38 @@ security:
       - stock:read
 
 paths:
+  /stock/config/getResources/{resource}:
+    get:
+      summary: Get list of a kind of resources.
+      operationId: GetResources
+      security:
+        - oauth2_scheme:
+            - stock:read
+      parameters:
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Name of the resource to get.
+            enum:
+              - locationSubtype
+              - stockState
+      responses:
+        "200":
+          description: Resource data.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ListLsmLocationSubtype"
+                  - $ref: "#/components/schemas/ListLsmStockState"
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
   /stock/config/locationSubtype/{code}:
     put:
       summary: Add or update location subtype.

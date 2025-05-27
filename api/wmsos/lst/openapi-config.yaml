@@ -34,6 +34,7 @@ components:
       required:
         - type
         - code
+        - description
         - lengthNumber
       properties:
         type:
@@ -45,8 +46,12 @@ components:
             - LOCATION
         code:
           type: string
-          description: Code of the locationType. Set of letter A-Z
+          description: Code of the locationSubtype. Set of letter A-Z
           example: "Z"
+        description:
+          type: string
+          description: Description of the locationSubtype
+          example: "GENERIC ZONE"
         lengthNumber:
           type: integer
           description: Number of digits for a location of this type.

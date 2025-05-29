@@ -42,8 +42,9 @@ components:
           description: Type of the location.
           example: "ZONE"
           enum:
+            - ROOT
             - ZONE
-            - LOCATION
+            - POSITION
         code:
           type: string
           description: Code of the locationSubtype. Set of letter A-Z

@@ -58,6 +58,14 @@ components:
           description: Number of digits for a location of this type.
           example: 3
 
+    LsmResourceType:
+      type: string
+      description: Type of the resource.
+      example: "locationSubtype"
+      enum:
+        - locationSubtype
+        - stockState
+
     LsmPositionSubtype:
       type: object
       required:
@@ -79,6 +87,17 @@ components:
           default: false
           example: true
 
+    LsmResources:
+      type: object
+      properties:
+        resourceType:
+          $ref: "#/components/schemas/LsmResourceType"
+        data:
+          oneOf:
+            - $ref: "#/components/schemas/ListLsmLocationSubtype"
+            - $ref: "#/components/schemas/ListLsmStockState"
+          description: List of resources.
+
     ListLsmLocationSubtype:
       type: array
       items:
@@ -92,6 +111,8 @@ components:
       items:
         type: string
       description: List of stock states.
+
+    
 
 
     ErrorData:
@@ -119,20 +140,14 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            description: Name of the resource to get.
-            enum:
-              - locationSubtype
-              - stockState
+            $ref: "#/components/schemas/LsmResourceType"
       responses:
         "200":
           description: Resource data.
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/ListLsmLocationSubtype"
-                  - $ref: "#/components/schemas/ListLsmStockState"
+                $ref: "#/components/schemas/LsmResources"
         "400":
           description: Data wrong.
           content:

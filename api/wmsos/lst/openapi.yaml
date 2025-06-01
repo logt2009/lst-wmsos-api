@@ -110,6 +110,27 @@ components:
           items:
             $ref: "#/components/schemas/LsmStockInfo"
 
+    LsmOperationSave:
+      type: object
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          description: |
+            Type of the operation.
+            - TOTAL: replaces 100% of stock position content.
+            - PARTIAL: replaces only the stock position content included in the request.
+                       If the content is 0 remove this content.
+          default: "TOTAL" 
+          enum:
+            - "TOTAL"
+            - "PARTIAL"
+        data:
+          $ref: "#/components/schemas/LsmStockPositionWithPosition"
+          description: Stock position with position.
+
     LsmStockPositionWithPosition:
       type: object
       required:
@@ -197,6 +218,31 @@ components:
         leaf:
           $ref: "#/components/schemas/LsmStockPositionWithPosition"
           description: Stock position with parent position.
+
+    LsmStockPositionMovement:
+      type: object
+      required:
+        - positionId
+        - targetParentId
+      properties:
+        positionId:
+          type: string
+          description: ID of the position that you can move
+          example: "R.Z01.P001"
+        targetParentId:
+          type: string
+          description: ID of the target parent position
+          example: "R.Z02"
+
+    LsmLocationState:
+      type: string
+      description: State of the location.
+      enum:
+        - ENABLED
+        - DISABLED
+        - ERROR
+        - BLOCKED
+        - DELETED
 
     ErrorData:
       type: object
@@ -303,3 +349,73 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorData"
+
+  /stock/position/move/{positionId}:
+    put:
+      summary: Move stock position by positionId.
+      operationId: moveStockPosition
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the position that contains Stock Position
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LsmStockPositionMovement"
+      responses:
+        "200":
+          description: Stock position saved.
+          content: {}
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+                example:
+                  message: "Invalid data provided."
+
+  /stock/location/{locationId}/{state}:
+    put:
+      summary: Update state of location.
+      operationId: updateLocationState
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: locationId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/LsmLocationState"
+        - name: state
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LsmStockPositionMovement"
+      responses:
+        "200":
+          description: Stock position saved.
+          content: {}
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+                example:
+                  message: "Invalid data provided."

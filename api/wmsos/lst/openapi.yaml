@@ -349,6 +349,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorData"
+    delete:
+      summary: Empty stock position by positionId.
+      operationId: emptyStockPosition
+      security:
+        - oauth2_scheme:
+            - stock:write
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the position that contains Stock Position
+      responses:
+        "200":
+          description: Stock position emptied.
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+                example:
+                  message: "Invalid data provided."
 
   /stock/position/move/{positionId}:
     put:

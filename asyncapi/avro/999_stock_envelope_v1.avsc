@@ -1,0 +1,21 @@
+{
+  "type": "record",
+  "name": "EvtStock",
+  "namespace": "org.eon.wmsos.events.stock.v1",
+  "doc": "Container for stock events",
+  "fields": [
+    { "name": "event_id", "type": "string" , "logicalType": "uuid"},
+    { "name": "event_type", "type": "string", "default": "org.eon.wmsos.events.stock.v1.EvtStock" },
+    { "name": "version", "type": "int" , "default": 1},
+    { "name": "origin_system", "type": "string", "default": "wmsos" },
+    { "name": "timestamp","type": { "type": "long", "logicalType": "timestamp-micros" } },
+    {
+      "name": "payload",
+      "type": [
+        "null",
+        { "type": "org.eon.wmsos.events.stockDelta.v1.EvtStockDelta", "name": "EvtStockDelta" }
+      ],
+      "default": null
+    }
+  ]
+}

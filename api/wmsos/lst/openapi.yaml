@@ -257,6 +257,36 @@ security:
       - stock:read
 
 paths:
+  /stock/position/adjust:
+    put:
+      summary: Add or update position in stock using delta value.
+      operationId: deltaUpdateInStockPosition
+      security:
+        - oauth2_scheme:
+            - stock:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/LsmStockPositionDelta"
+      responses:
+        "200":
+          description: Stock added or updated.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LsmStockPositionWithPosition"
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
   /stock/position/{positionId}:
     get:
       summary: Get stock postion by id.

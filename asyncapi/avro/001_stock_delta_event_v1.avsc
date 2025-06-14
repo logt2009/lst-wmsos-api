@@ -1,62 +1,71 @@
 {
-  "type": "record",
-  "name": "EvtStockDelta",
-  "namespace": "org.eon.wmsos.events.stockDelta.v1",
-  "fields": [
-    {
-      "name": "created_at",
-      "type": {
-        "type": "long",
-        "logicalType": "timestamp-micros"
-      }
-    },
-    {
-      "name": "operation",
-      "type": "string"
-    },
-    {
-      "name": "location_state",
-      "type": {
-        "type": "record",
-        "name": "LocationState",
-        "fields": [
-          {
-            "name": "from",
-            "type": ["null", "string"]
-          }, 
-          {
-            "name": "to",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "deltas",
-      "type": {
-        "type": "array",
-        "items": {
-          "type": "record",
-          "name": "EvtStockInfo",
-          "fields": [
-            { "name": "sku", "type": "string" },
-            {
-              "name": "amounts",
-              "type": {
-                "type": "array",
-                "items": {
-                  "type": "record",
-                  "name": "EvtStockAmount",
-                  "fields": [
-                    { "name": "state", "type": "string" },
-                    { "name": "amount", "type": "int" }
-                  ]
-                }
-              }
+    "type": "record",
+    "name": "EvtStockOperation",
+    "namespace": "org.eon.wmsos.events.stockOperation.v1",
+    "fields": [
+        {
+            "name": "created_at",
+            "type": {
+                "type": "long",
+                "logicalType": "timestamp-micros"
             }
-          ]
+        },
+        {
+            "name": "operation",
+            "type": "string"
+        },
+        {
+            "name": "operationContent",
+            "type": {
+                "type": "record",
+                "name": "OperationContent",
+                "fields": [
+                    {
+                        "name": "positionId",
+                        "type": "string"
+                    },
+                    {
+                        "name": "locationState",
+                        "type": "string"
+                    },
+                    {
+                        "name": "deltas",
+                        "type": {
+                            "type": "array",
+                            "items": {
+                                "type": "record",
+                                "name": "EvtStockInfo",
+                                "fields": [
+                                    {
+                                        "name": "sku",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "amounts",
+                                        "type": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "record",
+                                                "name": "EvtStockAmount",
+                                                "fields": [
+                                                    {
+                                                        "name": "state",
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "name": "amount",
+                                                        "type": "int"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
         }
-      }
-    }
-  ]
+    ]
 }

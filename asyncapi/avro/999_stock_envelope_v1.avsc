@@ -38,8 +38,8 @@
             "type": [
                 "null",
                 {
-                    "type": "org.eon.wmsos.events.stockDelta.v1.EvtStockDelta",
-                    "name": "EvtStockDelta"
+                    "type": "org.eon.wmsos.events.stock.v1.EvtStockOperation",
+                    "name": "EvtStockOperation"
                 }
             ],
             "default": null

@@ -259,8 +259,8 @@ security:
 paths:
   /stock/position/adjust:
     put:
-      summary: Add or update position in stock using delta value.
-      operationId: deltaUpdateInStockPosition
+      summary: Add or update n positions in stock using delta value.
+      operationId: deltaUpdateInStockPositions
       security:
         - oauth2_scheme:
             - stock:write

@@ -5,5 +5,5 @@
 Generate artifact with model and controller for api.
 
 ```
-    mvn clean package
+    mvn clean install
 ```

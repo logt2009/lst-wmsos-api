@@ -1,0 +1,120 @@
+openapi: 3.0.3
+info:
+  title: Global Logical Stock Management API
+  version: 1.0.0
+  description: API to manage global stock, with support for creation, updating, 
+               sync and allowing grouping of stock.
+  termsOfService: https://example.com/terms
+  contact:
+    name: LogT - Logitics Tech
+    email: 2019onlogistica@gmail.com
+  license:
+    name: Apache License 2.0
+    url: http://www.apache.org/licenses/
+servers:
+  - url: https://api.globalstockmanagement/v1
+
+components:
+  securitySchemes:
+    oauth2_scheme:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            stock:read: Permission for reading.
+            stock:write: Permission for writing. Update, delete and create stock.
+
+  schemas:
+    GlsmStockKey:
+      type: object
+      properties:
+        SKU:
+          type: string
+          description: Unique identifier for the stock item.
+        locationStockState:
+          type: string
+          description: State of Stock Location.
+        state:
+          type: string
+          description: State of stock.
+        properties:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                description: Name of property.
+              value:
+                type: string
+                description: Value of property.
+      required:
+        - SKU
+    
+    GlsmInventoryStock:
+      type: object
+      properties:
+        key: 
+          $ref: "#/components/schemas/GlsmStockKey"
+        amount:
+          type: integer
+          format: int64
+          description: Total amount of stock for a key
+        lastUpdateTime:
+          type: string
+          format: date-time-nanoseconds
+          description: Time of last update
+        lastUpdateReason:
+          type: string
+          description: Reason that is origin of last update
+        lastUpdateOrigin:
+          type: string
+          description: Origin of last update. For example a system.
+        lastSyncTime:
+          type: string
+          format: date-time-nanoseconds
+          description: Time of last sync process
+
+    ErrorData:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+paths:
+  /glstock:
+    post:     
+      tags:
+        - GlobalStockController 
+      summary: Recovery global Stock Using Filter.
+      operationId: getStock
+      security:
+        - oauth2_scheme:
+            - stock:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/GlsmStockKey"
+      responses:
+        "200":
+          description: Stock added or updated.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GlsmInventoryStock"
+        "400":
+          description: Data wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorData"
+

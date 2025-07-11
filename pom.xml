@@ -214,6 +214,26 @@
                             <verbose>true</verbose>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>generate-openapi-globalstock</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-openapi-server</goal>
+                        </goals>
+                        <configuration>
+                            <definitionFile>api/wmsos/lstglobal/openapi.yaml</definitionFile>
+                            <outputDir>${project.build.directory}/generated-sources/openapi/config</outputDir>
+                            <generatorName>micronaut</generatorName>
+                            <apiPackageName>org.eon.wmsos.globalstock.generated.api</apiPackageName>
+                            <modelPackageName>org.eon.wmsos.globalstock.generated.model</modelPackageName>
+                            <invokerPackageName>org.eon.wmsos.globalstock.generated.invoker</invokerPackageName>
+                            <serializationFramework>jackson</serializationFramework>
+                            <verbose>true</verbose>
+                            <additionalProperties>
+                                <useTags>true</useTags>
+                            </additionalProperties>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

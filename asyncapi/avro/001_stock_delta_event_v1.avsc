@@ -23,8 +23,41 @@
                     "name": "OperationContent",
                     "fields": [
                         {
-                            "name": "positionId",
-                            "type": "string"
+                            "name": "position",
+                            "type": {
+                                "type": "record",
+                                "name": "EvtStockPosition",
+                                "fields": [
+                                    {
+                                        "name": "id",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "metadata",
+                                        "type": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "record",
+                                                "name": "EvtStockPositionMetadata",
+                                                "fields": [
+                                                    {
+                                                        "name": "partialId",
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "name": "type",
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "name": "subtype",
+                                                        "type": "string"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
                         },
                         {
                             "name": "locationState",

@@ -4,53 +4,95 @@
     "namespace": "org.eon.wmsos.events.stock.v1",
     "fields": [
         {
+            "name": "sync",
+            "type": [
+                "null",
+                {
+                    "type": "record",
+                    "name": "Sync",
+                    "documentation": "Synchronization metadata for the events included in a sync operation.",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "type": "string",
+                            "logicalType": "uuid",
+                            "documentation": "Unique identifier for the sync operation."
+                        },
+                        {
+                            "name": "partialId",
+                            "type": "int",
+                            "documentation": "Partial ID for synchronization purposes. This id start in 1 and increases in 1 for each new event."
+                        },
+                        {
+                            "name": "total",
+                            "type": ["null", "string"],
+                            "default": null,
+                            "documentation": "Total number of events in the sync operation. Usually, It'd only be present for the last event."
+                        }
+                    ]
+                }
+            ],
+            "default": null
+        },
+        {
             "name": "created_at",
             "type": {
                 "type": "long",
                 "logicalType": "timestamp-micros"
-            }
+            },
+            "documentation": "Timestamp when the original business event was created, in microseconds since epoch."
         },
         {
             "name": "operation",
-            "type": "string"
+            "type": "string",
+            "documentation": "Type of stock operation, such as 'UPDATE, SYNC'."
         },
         {
             "name": "operationContent",
+            "documentation": "Content of the stock operation, which includes position details, location state, and deltas.",
             "type": {
                 "type": "array",
                 "items": {
                     "type": "record",
                     "name": "OperationContent",
+                    "documentation": "Content of the stock operation, including position, location state, and deltas.",
                     "fields": [
                         {
                             "name": "position",
+                            "documentation": "Details of the stock position involved in the operation.",
                             "type": {
                                 "type": "record",
                                 "name": "EvtStockPosition",
                                 "fields": [
                                     {
                                         "name": "id",
-                                        "type": "string"
+                                        "type": "string",
+                                        "documentation": "Unique identifier for the stock position. Example: RZ01P0001"
                                     },
                                     {
                                         "name": "metadata",
+                                        "documentation": "Metadata associated with the stock position",
                                         "type": {
                                             "type": "array",
                                             "items": {
                                                 "type": "record",
                                                 "name": "EvtStockPositionMetadata",
+                                                "documentation": "Metadata associated with the stock position",
                                                 "fields": [
                                                     {
                                                         "name": "partialId",
-                                                        "type": "string"
+                                                        "type": "string",
+                                                        "documentation": "Partial ID of a position. for example: R, Z01, P0001"
                                                     },
                                                     {
                                                         "name": "type",
-                                                        "type": "string"
+                                                        "type": "string",
+                                                        "documentation": "Type of the partial position"
                                                     },
                                                     {
                                                         "name": "subtype",
-                                                        "type": "string"
+                                                        "type": "string",
+                                                        "documentation": "Subtype of the partial position"
                                                     }
                                                 ]
                                             }

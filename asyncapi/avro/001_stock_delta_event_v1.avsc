@@ -25,7 +25,7 @@
                         },
                         {
                             "name": "total",
-                            "type": ["null", "string"],
+                            "type": ["null", "int"],
                             "default": null,
                             "documentation": "Total number of events in the sync operation. Usually, It'd only be present for the last event."
                         }

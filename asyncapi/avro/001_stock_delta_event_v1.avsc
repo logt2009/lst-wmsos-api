@@ -19,6 +19,23 @@
                             "documentation": "Unique identifier for the sync operation."
                         },
                         {
+                            "name": "key",
+                            "type": {
+                                "type": "record",
+                                "name": "SyncKey",
+                                "fields": [
+                                    {
+                                        "name": "SKU",
+                                        "type": ["null", "string"]
+                                    },
+                                    {
+                                        "name": "locationId",
+                                        "type": ["null", "string"]
+                                    }
+                                ]
+                            }
+                        },
+                        {
                             "name": "partialId",
                             "type": "int",
                             "documentation": "Partial ID for synchronization purposes. This id start in 1 and increases in 1 for each new event."
